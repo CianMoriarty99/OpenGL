@@ -16,7 +16,8 @@ public class M04 extends JFrame implements ActionListener {
   private final FPSAnimator animator; 
   private Camera camera;
   public static boolean rollHead;
-  public static boolean rollBody;
+  public static boolean rockBody;
+  public static boolean slideAround;
   
 
   public static void main(String[] args) {
@@ -46,34 +47,19 @@ public class M04 extends JFrame implements ActionListener {
     menuBar.add(fileMenu);
     
     JPanel p = new JPanel();
-      JButton b = new JButton("camera X");
+      JButton b = new JButton("Rock");
       b.addActionListener(this);
       p.add(b);
-      b = new JButton("camera Z");
+	  b = new JButton("Roll");
       b.addActionListener(this);
       p.add(b);
-      b = new JButton("Roll Head");
+      b = new JButton("Slide");
       b.addActionListener(this);
       p.add(b);
-      b = new JButton("Stop Rolling Head");
+      b = new JButton("Slide, Rock, and Roll");
       b.addActionListener(this);
       p.add(b);
-	  b = new JButton("Rock Body");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("Stop Rocking Body");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("Slide Around");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("Stop Sliding Around");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("lowered arms");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("raised arms");
+      b = new JButton("Reset");
       b.addActionListener(this);
       p.add(b);
     this.add(p, BorderLayout.SOUTH);
@@ -91,41 +77,30 @@ public class M04 extends JFrame implements ActionListener {
   }
   
   public void actionPerformed(ActionEvent e) {
-    if (e.getActionCommand().equalsIgnoreCase("camera X")) {
-      camera.setCamera(Camera.CameraType.X);
-      canvas.requestFocusInWindow();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("camera Z")) {
-      camera.setCamera(Camera.CameraType.Z);
-      canvas.requestFocusInWindow();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("Roll Head")) {
+	if (e.getActionCommand().equalsIgnoreCase("Roll")) {
       glEventListener.startAnimation();
 	  rollHead = true;
     }
-    else if (e.getActionCommand().equalsIgnoreCase("Stop Rolling Head")) {
-      glEventListener.stopAnimation();
-	  rollHead = false;
-    }
-	else if (e.getActionCommand().equalsIgnoreCase("Rock Body")) {
+	else if (e.getActionCommand().equalsIgnoreCase("Rock")) {
       glEventListener.startAnimation();
-	  rollBody = true;
+	  rockBody = true;
     }
-    else if (e.getActionCommand().equalsIgnoreCase("Stop Rocking Body")) {
-      glEventListener.stopAnimation();
-	  rollBody = false;
+    else if (e.getActionCommand().equalsIgnoreCase("Slide")) {
+      glEventListener.startAnimation();
+	  slideAround = true;
+
+	 }
+    else if (e.getActionCommand().equalsIgnoreCase("Slide, Rock, and Roll")) {
+      glEventListener.startAnimation();
+	  rockBody = true;
+	  rollHead = true;
+	  slideAround = true;
     }
-    else if (e.getActionCommand().equalsIgnoreCase("Slide Around")) {
-      glEventListener.incXPosition();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("Stop Sliding Around")) {
-      glEventListener.decXPosition();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("lowered arms")) {
-      glEventListener.loweredArms();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("raised arms")) {
-      glEventListener.raisedArms();
+    else if (e.getActionCommand().equalsIgnoreCase("Reset")) {
+      rockBody = false;
+	  rollHead = false;
+	  slideAround = false;
+	  //Reset position and rotation also
     }
     else if(e.getActionCommand().equalsIgnoreCase("quit"))
       System.exit(0);

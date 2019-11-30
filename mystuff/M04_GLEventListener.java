@@ -55,6 +55,7 @@ public class M04_GLEventListener implements GLEventListener {
     GL3 gl = drawable.getGL().getGL3();
     light.dispose(gl);
     floor.dispose(gl);
+	wall.dispose(gl);
     sphere.dispose(gl);
     cube.dispose(gl);
     cube2.dispose(gl);
@@ -82,38 +83,7 @@ public class M04_GLEventListener implements GLEventListener {
     savedTime = elapsedTime;
   }
    
-  public void incXPosition() {
-    xPosition += 0.5f;
-    if (xPosition>5f) xPosition = 5f;
-    updateMove();
-  }
-   
-  public void decXPosition() {
-    xPosition -= 0.5f;
-    if (xPosition<-5f) xPosition = -5f;
-    updateMove();
-  }
- 
-  private void updateMove() {
-    robotMoveTranslate.setTransform(Mat4Transform.translate(xPosition,0,0));
-    robotMoveTranslate.update();
-  }
-  
-  public void loweredArms() {
-    stopAnimation();
-    //leftArmRotate.setTransform(Mat4Transform.rotateAroundX(180));
-    //leftArmRotate.update();
-    //rightArmRotate.setTransform(Mat4Transform.rotateAroundX(180));
-    //rightArmRotate.update();
-  }
-   
-  public void raisedArms() {
-    stopAnimation();
-    //leftArmRotate.setTransform(Mat4Transform.rotateAroundX(0));
-    //leftArmRotate.update();
-    //rightArmRotate.setTransform(Mat4Transform.rotateAroundX(0));
-    //rightArmRotate.update();
-  }
+
   
   // ***************************************************
   /* THE SCENE
@@ -123,23 +93,23 @@ public class M04_GLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, sphere, cube, cube2, sphere2;
+  private Model floor, wall, sphere, cube, cube2, sphere2;
   private Light light;
   private SGNode robotRoot;
   
   private float xPosition = 0;
-  private TransformNode translateX, robotMoveTranslate, topButtonRotate, headRotate,
-  middleButtonRotate, bottomButtonRotate, eye1Rotate, eye2Rotate, noseRotate, mouthRotate , leftArmRotate, bodyRotate ;
+  private TransformNode translateX, robotMoveTranslate, topButtonRotate, headRotate, hat1Rotate,
+  middleButtonRotate, bottomButtonRotate, eye1Rotate, eye2Rotate, noseRotate, mouthRotate , bodyRotate, bodyRotate2 ;
   
   private void initialise(GL3 gl) {
     createRandomNumbers();
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/cloud.jpg");
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/jade.jpg");
-    int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
+    int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/surface_specular.jpg"); //Shiny surface
     int[] textureId3 = TextureLibrary.loadTexture(gl, "textures/container2.jpg");
-    int[] textureId4 = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
+    int[] textureId4 = TextureLibrary.loadTexture(gl, "textures/surface_specular.jpg");
     int[] textureId5 = TextureLibrary.loadTexture(gl, "textures/wattBook.jpg");
-    int[] textureId6 = TextureLibrary.loadTexture(gl, "textures/wattBook_specular.jpg");
+    int[] textureId6 = TextureLibrary.loadTexture(gl, "textures/surface_specular.jpg");
     
         
     light = new Light(gl);
@@ -149,7 +119,8 @@ public class M04_GLEventListener implements GLEventListener {
     Shader shader = new Shader(gl, "vs_cube_04.txt", "fs_cube_04.txt");
     Material material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     Mat4 modelMatrix = Mat4Transform.scale(16,1f,16);
-    floor = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId0);
+    floor = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId0, textureId2);
+	wall = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3);
     
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "vs_cube_04.txt", "fs_cube_04.txt");
@@ -197,6 +168,7 @@ public class M04_GLEventListener implements GLEventListener {
       TransformNode bodyTranslate = new TransformNode("body translate", 
                                            Mat4Transform.translate(0,0,0));
       bodyRotate = new TransformNode("body rotate",Mat4Transform.rotateAroundX(0)); // 0 is correct orientation
+	  bodyRotate2 = new TransformNode("body rotate2",Mat4Transform.rotateAroundX(0));
       Mat4 m = new Mat4(1);
       m = Mat4.multiply(m, Mat4Transform.scale(bodyScale,bodyScale,bodyScale));
       m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
@@ -305,11 +277,12 @@ public class M04_GLEventListener implements GLEventListener {
         robotTranslate.addChild(body);
           body.addChild(bodyTranslate);
             bodyTranslate.addChild(bodyRotate);
-            bodyRotate.addChild(body1Scale);
+			bodyRotate.addChild(bodyRotate2);
+            bodyRotate2.addChild(body1Scale);
             body1Scale.addChild(bodyShape);
 			
 			
-			bodyRotate.addChild(head);
+			bodyRotate2.addChild(head);
 				head.addChild(headTranslate);
 				headTranslate.addChild(headRotate);
 				headRotate.addChild(head1Scale);
@@ -346,19 +319,19 @@ public class M04_GLEventListener implements GLEventListener {
 				mouthRotate.addChild(mouthScale);
 				mouthScale.addChild(mouthShape);
 			
-			bodyRotate.addChild(topbutton);
+			bodyRotate2.addChild(topbutton);
 				topbutton.addChild(topButtonTranslate);
 				topButtonTranslate.addChild(topButtonRotate);
 				topButtonRotate.addChild(topButtonScale);
 				topButtonScale.addChild(topButtonShape);
 				
-			bodyRotate.addChild(middleButton);
+			bodyRotate2.addChild(middleButton);
 				middleButton.addChild(middleButtonTranslate);
 				middleButtonTranslate.addChild(middleButtonRotate);
 				middleButtonRotate.addChild(middleButtonScale);
 				middleButtonScale.addChild(middleButtonShape);
 				
-			bodyRotate.addChild(bottomButton);
+			bodyRotate2.addChild(bottomButton);
 				bottomButton.addChild(bottomButtonTranslate);
 				bottomButtonTranslate.addChild(bottomButtonRotate);
 				bottomButtonRotate.addChild(bottomButtonScale);
@@ -371,18 +344,32 @@ public class M04_GLEventListener implements GLEventListener {
     //robotRoot.print(0, false);
     //System.exit(0);
   }
+  
+  private Mat4 getMforWall() {
+    float size = 16f;
+    Mat4 modelMatrix = new Mat4(1);
+    modelMatrix = Mat4.multiply(Mat4Transform.scale(size,1f,size), modelMatrix);
+    modelMatrix = Mat4.multiply(Mat4Transform.rotateAroundX(90), modelMatrix);
+    modelMatrix = Mat4.multiply(Mat4Transform.translate(0,size*0.5f,-size*0.5f), modelMatrix);
+    return modelMatrix;
+  }
  
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
     light.setPosition(getLightPosition());  // changing light position each frame
     light.render(gl);
     floor.render(gl); 
+	wall.render(gl);
+	wall.setModelMatrix(getMforWall());
     if (animation) 
 		if (M04.rollHead) {
 			updateHead();
 		}
-		if (M04.rollBody) {
+		if (M04.rockBody) {
 			updateBody();
+		}
+		if (M04.slideAround){
+			slideAround();
 		}
     robotRoot.draw(gl);
   }
@@ -404,6 +391,19 @@ public class M04_GLEventListener implements GLEventListener {
     float rotateAngle = 180f+90f*(float)Math.sin(elapsedTime);
     bodyRotate.setTransform(Mat4Transform.rotateAroundZ((rotateAngle -180)/4));
     bodyRotate.update();
+  }
+  
+   private void slideAround() {
+    double elapsedTime = getSeconds()-startTime;
+    float rotateAngle = 180f+90f*(float)Math.sin(elapsedTime*5);
+	float slideSwing1 = (float)Math.sin(elapsedTime);
+	float slideSwing2 = (float)Math.sin(elapsedTime+2);
+	Mat4 m1 = Mat4Transform.rotateAroundY((rotateAngle -180)/7);
+	Mat4 m2 = Mat4Transform.translate(slideSwing1/2,0,slideSwing2/2);
+	Mat4 m3 = Mat4.multiply(m1, m2);
+    bodyRotate2.setTransform(m3);
+	
+    bodyRotate2.update();
   }
   
   // The light's postion is continually being changed, so needs to be calculated for each frame.
