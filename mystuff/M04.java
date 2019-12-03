@@ -18,6 +18,7 @@ public class M04 extends JFrame implements ActionListener {
   public static boolean rollHead;
   public static boolean rockBody;
   public static boolean slideAround;
+  public static boolean sunlight;
   
 
   public static void main(String[] args) {
@@ -74,24 +75,24 @@ public class M04 extends JFrame implements ActionListener {
     });
     animator = new FPSAnimator(canvas, 60);
     animator.start();
+	glEventListener.startAnimation();
   }
   
   public void actionPerformed(ActionEvent e) {
 	if (e.getActionCommand().equalsIgnoreCase("Roll")) {
-      glEventListener.startAnimation();
 	  rollHead = true;
     }
 	else if (e.getActionCommand().equalsIgnoreCase("Rock")) {
-      glEventListener.startAnimation();
+
 	  rockBody = true;
     }
     else if (e.getActionCommand().equalsIgnoreCase("Slide")) {
-      glEventListener.startAnimation();
+
 	  slideAround = true;
 
 	 }
     else if (e.getActionCommand().equalsIgnoreCase("Slide, Rock, and Roll")) {
-      glEventListener.startAnimation();
+
 	  rockBody = true;
 	  rollHead = true;
 	  slideAround = true;
@@ -101,6 +102,10 @@ public class M04 extends JFrame implements ActionListener {
 	  rollHead = false;
 	  slideAround = false;
 	  //Reset position and rotation also
+    }
+	
+	else if (e.getActionCommand().equalsIgnoreCase("Toggle Sunlight")) {
+		sunlight = !sunlight;
     }
     else if(e.getActionCommand().equalsIgnoreCase("quit"))
       System.exit(0);

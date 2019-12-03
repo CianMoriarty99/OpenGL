@@ -9,7 +9,8 @@ import com.jogamp.opengl.util.glsl.*;
   
 public class M04_GLEventListener implements GLEventListener {
   
-  private static final boolean DISPLAY_SHADERS = false;
+  private static final boolean DISPLAY_SHADERS = true;
+  private Shader shader;
     
   public M04_GLEventListener(Camera camera) {
     this.camera = camera;
@@ -54,6 +55,7 @@ public class M04_GLEventListener implements GLEventListener {
   public void dispose(GLAutoDrawable drawable) {
     GL3 gl = drawable.getGL().getGL3();
     light.dispose(gl);
+	light2.dispose(gl);
     floor.dispose(gl);
 	wall.dispose(gl);
     sphere.dispose(gl);
@@ -93,13 +95,14 @@ public class M04_GLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, wall, sphere, cube, cube2, sphere2;
-  private Light light;
+  private Model floor, wall, sphere, cube, cube2, sphere2, sphere3;
+  private Light light, light2;
   private SGNode robotRoot;
   
   private float xPosition = 0;
-  private TransformNode translateX, robotMoveTranslate, topButtonRotate, headRotate, hat1Rotate,
-  middleButtonRotate, bottomButtonRotate, eye1Rotate, eye2Rotate, noseRotate, mouthRotate , bodyRotate, bodyRotate2 ;
+  private TransformNode translateX, robotMoveTranslate, topButtonRotate, headRotate, hat1Rotate, hat2Rotate, hat3Rotate,
+  middleButtonRotate, bottomButtonRotate, eye1Rotate, eye2Rotate, noseRotate, mouthRotate , 
+  bodyRotate, bodyRotate2, spotlightBaseRotate, spotlightPivotRotate, shinyObjectRotate ;
   
   private void initialise(GL3 gl) {
     createRandomNumbers();
@@ -118,7 +121,7 @@ public class M04_GLEventListener implements GLEventListener {
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     Shader shader = new Shader(gl, "vs_cube_04.txt", "fs_cube_04.txt");
     Material material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    Mat4 modelMatrix = Mat4Transform.scale(16,1f,16);
+    Mat4 modelMatrix = Mat4Transform.scale(25,1f,25);
     floor = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId0, textureId2);
 	wall = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3);
     
@@ -128,12 +131,14 @@ public class M04_GLEventListener implements GLEventListener {
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
     sphere = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, textureId2);
 	sphere2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
+	sphere3 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
     
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube_04.txt", "fs_cube_04.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
     cube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
+	cube2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
     
 
     
@@ -150,6 +155,23 @@ public class M04_GLEventListener implements GLEventListener {
 	float eyeScale = 0.5f;
 	float armLength = 3.5f;
     float armScale = 0.5f;
+	
+	float hatBaseScale = 2.2f;
+	float hatBaseHeight = 0.2f;
+	
+	float hatTopScale = 1.1f;
+	float hatTopHeight = 1f;
+	
+	float hatSphereScale = 0.7f;
+	
+	float spotlightBaseScale = 0.2f;
+	float spotlightBaseHeight = 10f;
+	
+	float spotlightPivotScale = 0.6f;
+	float spotlightPivotLength = 3f;
+	
+	float shinyObjectScale = 3f;
+	float shinyObjectHeight = 6f;
     
     robotRoot = new NameNode("root");
     robotMoveTranslate = new TransformNode("robot transform",Mat4Transform.translate(xPosition,0,0));
@@ -157,12 +179,7 @@ public class M04_GLEventListener implements GLEventListener {
     TransformNode robotTranslate = new TransformNode("robot transform",Mat4Transform.translate(0,0,0));
 	
     
-//    NameNode body = new NameNode("body");
-//      Mat4 m = Mat4Transform.scale(bodyScale,bodyScale,bodyScale);
-//      m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
-//	  bodyRotate = new TransformNode("body rotate",Mat4Transform.rotateAroundX(0));
-//      TransformNode bodyTransform = new TransformNode("body transform", m);
-//        ModelNode bodyShape = new ModelNode("Sphere(body)", sphere);
+
 		
 	NameNode body = new NameNode("body");
       TransformNode bodyTranslate = new TransformNode("body translate", 
@@ -188,13 +205,30 @@ public class M04_GLEventListener implements GLEventListener {
 		
 	NameNode hat1 = new NameNode("hat1");
       TransformNode hat1Translate = new TransformNode("hat1 translate", 
-                                           Mat4Transform.translate(0.3f,((headScale*0.5f)+0.2f),((headScale*0.5f)-0.2f)));
+                                           Mat4Transform.translate(0,((headScale)-0.1f),0));
       hat1Rotate = new TransformNode("hat1 rotate",Mat4Transform.rotateAroundX(180));
       m = new Mat4(1);
-      m = Mat4.multiply(m, Mat4Transform.scale(eyeScale,eyeScale,eyeScale));
+      m = Mat4.multiply(m, Mat4Transform.scale(hatBaseScale,hatBaseHeight,hatBaseScale));
       TransformNode hat1Scale = new TransformNode("hat1", m);
-        ModelNode hat1Shape = new ModelNode("Sphere(hat1)", sphere2);
+        ModelNode hat1Shape = new ModelNode("Sphere(hat1)", cube2);
 		
+	NameNode hat2 = new NameNode("hat2");
+      TransformNode hat2Translate = new TransformNode("hat2 translate", 
+                                           Mat4Transform.translate(0,((headScale)+(hatTopHeight*0.5f)-0.1f),0));
+      hat2Rotate = new TransformNode("hat2 rotate",Mat4Transform.rotateAroundX(180));
+      m = new Mat4(1);
+      m = Mat4.multiply(m, Mat4Transform.scale(hatTopScale,hatTopHeight,hatTopScale));
+      TransformNode hat2Scale = new TransformNode("hat2", m);
+        ModelNode hat2Shape = new ModelNode("Sphere(hat2)", cube2);
+		
+	NameNode hat3 = new NameNode("hat3");
+      TransformNode hat3Translate = new TransformNode("hat3 translate", 
+                                           Mat4Transform.translate(hatTopScale*0.5f,((headScale)+(hatTopHeight)),0));
+      hat3Rotate = new TransformNode("hat3 rotate",Mat4Transform.rotateAroundX(180));
+      m = new Mat4(1);
+      m = Mat4.multiply(m, Mat4Transform.scale(hatSphereScale,hatSphereScale,hatSphereScale));
+      TransformNode hat3Scale = new TransformNode("hat3", m);
+        ModelNode hat3Shape = new ModelNode("Sphere(hat3)", sphere3);
 		
 
 
@@ -269,12 +303,62 @@ public class M04_GLEventListener implements GLEventListener {
       TransformNode bottomButtonScale = new TransformNode("bottomButton scale", m);
         ModelNode bottomButtonShape = new ModelNode("Sphere(bottom button)", sphere2);
     
+	
+	
+	NameNode spotlightBase = new NameNode("spotlightBase");
+      TransformNode spotlightBaseTranslate = new TransformNode("spotlightBase translate", 
+                                           Mat4Transform.translate(-10f,(spotlightBaseHeight*0.5f),0));
+      spotlightBaseRotate = new TransformNode("spotlightBase rotate",Mat4Transform.rotateAroundX(0));
+      m = new Mat4(1);
+      m = Mat4.multiply(m, Mat4Transform.scale(spotlightBaseScale,spotlightBaseHeight,spotlightBaseScale));
+      TransformNode spotlightBaseScale1 = new TransformNode("spotlightBase scale", m);
+        ModelNode spotlightBaseShape = new ModelNode("Sphere(spotlightBase)", sphere2);
+		
+	NameNode spotlightPivot = new NameNode("spotlightPivot");
+      TransformNode spotlightPivotTranslate = new TransformNode("spotlightPivot translate", 
+                                           Mat4Transform.translate(0,(spotlightBaseHeight*0.5f),0));
+      spotlightPivotRotate = new TransformNode("spotlightPivot rotate",Mat4Transform.rotateAroundZ(50));
+      m = new Mat4(1);
+      m = Mat4.multiply(m, Mat4Transform.scale(spotlightPivotScale,spotlightPivotLength,spotlightPivotScale));
+      TransformNode spotlightPivotScale1 = new TransformNode("spotlightPivot scale", m);
+        ModelNode spotlightPivotShape = new ModelNode("Sphere(spotlightPivot)", sphere2);
+
+
+
+	NameNode shinyObject = new NameNode("shinyObject");
+      TransformNode shinyObjectTranslate = new TransformNode("shinyObject translate", 
+                                           Mat4Transform.translate(8f,(shinyObjectHeight*0.5f),0));
+      shinyObjectRotate = new TransformNode("shinyObject rotate",Mat4Transform.rotateAroundX(0));
+      m = new Mat4(1);
+      m = Mat4.multiply(m, Mat4Transform.scale(shinyObjectScale,shinyObjectHeight,shinyObjectScale));
+      TransformNode shinyObjectScale1 = new TransformNode("shinyObject scale", m);
+        ModelNode shinyObjectShape = new ModelNode("Cube(shinyObject)", cube2);
 
         
         
     robotRoot.addChild(robotMoveTranslate);
       robotMoveTranslate.addChild(robotTranslate);
         robotTranslate.addChild(body);
+		robotTranslate.addChild(spotlightBase);
+		robotTranslate.addChild(shinyObject);
+		
+		  shinyObject.addChild(shinyObjectTranslate);
+            shinyObjectTranslate.addChild(shinyObjectRotate);
+			shinyObjectRotate.addChild(shinyObjectScale1);
+            shinyObjectScale1.addChild(shinyObjectShape);
+		
+		  spotlightBase.addChild(spotlightBaseTranslate);
+            spotlightBaseTranslate.addChild(spotlightBaseRotate);
+			spotlightBaseRotate.addChild(spotlightBaseScale1);
+            spotlightBaseScale1.addChild(spotlightBaseShape);
+			
+			spotlightBaseRotate.addChild(spotlightPivotTranslate);
+				spotlightPivotTranslate.addChild(spotlightPivotRotate);
+				spotlightPivotRotate.addChild(spotlightPivotScale1);
+				spotlightPivotScale1.addChild(spotlightPivotShape);
+			
+		
+		
           body.addChild(bodyTranslate);
             bodyTranslate.addChild(bodyRotate);
 			bodyRotate.addChild(bodyRotate2);
@@ -294,6 +378,19 @@ public class M04_GLEventListener implements GLEventListener {
 				hat1Translate.addChild(hat1Rotate);
 				hat1Rotate.addChild(hat1Scale);
 				hat1Scale.addChild(hat1Shape);	
+			
+			headRotate.addChild(hat2);
+				hat2.addChild(hat2Translate);
+				hat2Translate.addChild(hat2Rotate);
+				hat2Rotate.addChild(hat2Scale);
+				hat2Scale.addChild(hat2Shape);	
+				
+			headRotate.addChild(hat3);
+				hat3.addChild(hat3Translate);
+				hat3Translate.addChild(hat3Rotate);
+				hat3Rotate.addChild(hat3Scale);
+				hat3Scale.addChild(hat3Shape);	
+			
 			
 			headRotate.addChild(eye1);
 				eye1.addChild(eye1Translate);
@@ -346,7 +443,7 @@ public class M04_GLEventListener implements GLEventListener {
   }
   
   private Mat4 getMforWall() {
-    float size = 16f;
+    float size = 25f;
     Mat4 modelMatrix = new Mat4(1);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(size,1f,size), modelMatrix);
     modelMatrix = Mat4.multiply(Mat4Transform.rotateAroundX(90), modelMatrix);
@@ -356,7 +453,7 @@ public class M04_GLEventListener implements GLEventListener {
  
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-    light.setPosition(getLightPosition());  // changing light position each frame
+    light.setPosition(15,15,15);  // changing light position each frame
     light.render(gl);
     floor.render(gl); 
 	wall.render(gl);
@@ -371,7 +468,12 @@ public class M04_GLEventListener implements GLEventListener {
 		if (M04.slideAround){
 			slideAround();
 		}
+	updateSpotlight();
     robotRoot.draw(gl);
+	
+
+
+
   }
   
 
@@ -406,20 +508,13 @@ public class M04_GLEventListener implements GLEventListener {
     bodyRotate2.update();
   }
   
-  // The light's postion is continually being changed, so needs to be calculated for each frame.
-  private Vec3 getLightPosition() {
+    private void updateSpotlight() {
     double elapsedTime = getSeconds()-startTime;
-    float x = 5.0f*(float)(Math.sin(Math.toRadians(elapsedTime*50)));
-    float y = 2.7f;
-    float z = 5.0f*(float)(Math.cos(Math.toRadians(elapsedTime*50)));
-    return new Vec3(x,y,z);   
-    //return new Vec3(5f,3.4f,5f);
+    spotlightBaseRotate.setTransform(Mat4Transform.rotateAroundY((float)(elapsedTime*180f)));
+    spotlightBaseRotate.update();
   }
-
   
-  // ***************************************************
-  /* TIME
-   */ 
+
   
   private double startTime;
   
